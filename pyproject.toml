@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "top-view-grounded-height-verification"
+version = "0.1.0"
+description = "Top-view-grounded height verification for electronic package drawings."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "anthropic==0.88.0",
+  "google-genai==1.70.0",
+  "openai==2.30.0",
+]
+
+[project.scripts]
+tvghv-stage1 = "top_view_grounded_height_verification.stage1.runner:main"
+tvghv-stage1-all = "top_view_grounded_height_verification.stage1.run_all:main"
+tvghv-build-evidence-bundle = "top_view_grounded_height_verification.stage1.evidence_bundle:main"
+tvghv-pipeline = "top_view_grounded_height_verification.pipeline:main"
+tvghv-report = "top_view_grounded_height_verification.reporting:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "tests"]

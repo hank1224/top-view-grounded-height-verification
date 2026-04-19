@@ -1,0 +1,2 @@
+"""Numeric OCR dimension extraction."""
+

@@ -1,0 +1,31 @@
+image_id,package_name,package_slug,kicad_model_name,shape_class,variant_name,variant_slug,image_path
+atpak-2__canonical-values,ATPAK-2,atpak-2,ATPAK-2.step,tabbed_power_smd,Canonical + Values,canonical-values,data/package_drawings/images/atpak-2/canonical-values.png
+atpak-2__rotated-values,ATPAK-2,atpak-2,ATPAK-2.step,tabbed_power_smd,Rotated + Values,rotated-values,data/package_drawings/images/atpak-2/rotated-values.png
+d2pak-to-263-2__canonical-values,D2PAK(TO-263-2),d2pak-to-263-2,TO-263-2.step,tabbed_power_smd,Canonical + Values,canonical-values,data/package_drawings/images/d2pak-to-263-2/canonical-values.png
+d2pak-to-263-2__rotated-values,D2PAK(TO-263-2),d2pak-to-263-2,TO-263-2.step,tabbed_power_smd,Rotated + Values,rotated-values,data/package_drawings/images/d2pak-to-263-2/rotated-values.png
+lfpak56__canonical-values,LFPAK56,lfpak56,LFPAK56.step,tabbed_power_smd,Canonical + Values,canonical-values,data/package_drawings/images/lfpak56/canonical-values.png
+lfpak56__rotated-values,LFPAK56,lfpak56,LFPAK56.step,tabbed_power_smd,Rotated + Values,rotated-values,data/package_drawings/images/lfpak56/rotated-values.png
+smb-do-214aa__canonical-values,SMB (DO-214AA),smb-do-214aa,D_SMB.step,two_terminal_diode_smd,Canonical + Values,canonical-values,data/package_drawings/images/smb-do-214aa/canonical-values.png
+smb-do-214aa__rotated-values,SMB (DO-214AA),smb-do-214aa,D_SMB.step,two_terminal_diode_smd,Rotated + Values,rotated-values,data/package_drawings/images/smb-do-214aa/rotated-values.png
+smc-do-214ab__canonical-values,SMC (DO-214AB),smc-do-214ab,D_SMC.step,two_terminal_diode_smd,Canonical + Values,canonical-values,data/package_drawings/images/smc-do-214ab/canonical-values.png
+smc-do-214ab__rotated-values,SMC (DO-214AB),smc-do-214ab,D_SMC.step,two_terminal_diode_smd,Rotated + Values,rotated-values,data/package_drawings/images/smc-do-214ab/rotated-values.png
+sod-123-sod-123fl__canonical-values,SOD-123/SOD-123FL,sod-123-sod-123fl,D_SOD-123.step,two_terminal_diode_smd,Canonical + Values,canonical-values,data/package_drawings/images/sod-123-sod-123fl/canonical-values.png
+sod-123-sod-123fl__rotated-values,SOD-123/SOD-123FL,sod-123-sod-123fl,D_SOD-123.step,two_terminal_diode_smd,Rotated + Values,rotated-values,data/package_drawings/images/sod-123-sod-123fl/rotated-values.png
+sod-323__canonical-values,SOD-323,sod-323,D_SOD-323.step,two_terminal_diode_smd,Canonical + Values,canonical-values,data/package_drawings/images/sod-323/canonical-values.png
+sod-323__rotated-values,SOD-323,sod-323,D_SOD-323.step,two_terminal_diode_smd,Rotated + Values,rotated-values,data/package_drawings/images/sod-323/rotated-values.png
+sod-923__canonical-values,SOD-923,sod-923,D_SOD-923.step,two_terminal_diode_smd,Canonical + Values,canonical-values,data/package_drawings/images/sod-923/canonical-values.png
+sod-923__rotated-values,SOD-923,sod-923,D_SOD-923.step,two_terminal_diode_smd,Rotated + Values,rotated-values,data/package_drawings/images/sod-923/rotated-values.png
+sot-143__canonical-values,SOT-143,sot-143,SOT-143.step,sot_like_smd,Canonical + Values,canonical-values,data/package_drawings/images/sot-143/canonical-values.png
+sot-143__rotated-values,SOT-143,sot-143,SOT-143.step,sot_like_smd,Rotated + Values,rotated-values,data/package_drawings/images/sot-143/rotated-values.png
+sot-223__canonical-values,SOT-223,sot-223,SOT-223.step,sot_like_smd,Canonical + Values,canonical-values,data/package_drawings/images/sot-223/canonical-values.png
+sot-223__rotated-values,SOT-223,sot-223,SOT-223.step,sot_like_smd,Rotated + Values,rotated-values,data/package_drawings/images/sot-223/rotated-values.png
+sot-23__canonical-values,SOT-23,sot-23,D_SOT-23.step,sot_like_smd,Canonical + Values,canonical-values,data/package_drawings/images/sot-23/canonical-values.png
+sot-23__rotated-values,SOT-23,sot-23,D_SOT-23.step,sot_like_smd,Rotated + Values,rotated-values,data/package_drawings/images/sot-23/rotated-values.png
+sot-89-3__canonical-values,SOT-89-3,sot-89-3,SOT-89-3.step,sot_like_smd,Canonical + Values,canonical-values,data/package_drawings/images/sot-89-3/canonical-values.png
+sot-89-3__rotated-values,SOT-89-3,sot-89-3,SOT-89-3.step,sot_like_smd,Rotated + Values,rotated-values,data/package_drawings/images/sot-89-3/rotated-values.png
+to-252__canonical-values,TO-252,to-252,TO-252-2.step,tabbed_power_smd,Canonical + Values,canonical-values,data/package_drawings/images/to-252/canonical-values.png
+to-252__rotated-values,TO-252,to-252,TO-252-2.step,tabbed_power_smd,Rotated + Values,rotated-values,data/package_drawings/images/to-252/rotated-values.png
+to-268-2__canonical-values,TO-268-2,to-268-2,TO-268-2.step,tabbed_power_smd,Canonical + Values,canonical-values,data/package_drawings/images/to-268-2/canonical-values.png
+to-268-2__rotated-values,TO-268-2,to-268-2,TO-268-2.step,tabbed_power_smd,Rotated + Values,rotated-values,data/package_drawings/images/to-268-2/rotated-values.png
+tsot-23-6__canonical-values,TSOT-23-6,tsot-23-6,TSOT-23-6.step,sot_like_smd,Canonical + Values,canonical-values,data/package_drawings/images/tsot-23-6/canonical-values.png
+tsot-23-6__rotated-values,TSOT-23-6,tsot-23-6,TSOT-23-6.step,sot_like_smd,Rotated + Values,rotated-values,data/package_drawings/images/tsot-23-6/rotated-values.png
