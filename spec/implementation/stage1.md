@@ -79,6 +79,20 @@ Prompt rendering 只支援一個 placeholder：`{{PACKAGE_CONTEXT_BLOCK}}`。`--
 
 Dry-run 用途是檢查 pipeline、artifact writing、schema、summary 是否可跑通，不代表 provider model behavior。
 
+## Provider support
+
+Stage 1 支援 `openai`、`gemini`、`anthropic` 與本機 `ollama`。Hosted providers 需要對應 API key；Ollama 不需要 API key，但 real run 需要 `OLLAMA_MODEL` 或 `--ollama-model`，並會使用 `OLLAMA_BASE_URL` / `--ollama-base-url` 指向本機 REST API，預設為 `http://localhost:11434/api`。
+
+常用 Ollama 指令範例：
+
+```bash
+tvghv-stage1 --task-name dimension_extraction --providers ollama --ollama-model <model>
+tvghv-stage1-all --providers ollama --ollama-model <model>
+python scripts/run_full_analysis.py --providers ollama --ollama-model <model>
+```
+
+執行 real Ollama run 前，需要先 `ollama serve` 並 pull vision-capable model。
+
 ## Schema modules
 
 ### Direct extraction
@@ -128,4 +142,3 @@ Normalize 後輸出 `targets.<key>.value/raw_value`。Compare 產生 per-field m
 `stage1.run_all.run_all(args)` 依序執行三個 Stage 1 tasks，再對每個 provider 建立 evidence bundle。輸出 summary 到 `runs/stage1/all/<run>.json`。
 
 這個 orchestrator 仍屬 Stage 1；Stage 2/3 要由 `pipeline.py` 或 `scripts/run_full_analysis.py` 後續執行。
-

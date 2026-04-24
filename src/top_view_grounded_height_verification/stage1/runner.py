@@ -20,6 +20,7 @@ from top_view_grounded_height_verification.common.io_utils import (
     write_text,
 )
 from top_view_grounded_height_verification.common.providers import (
+    DEFAULT_OLLAMA_BASE_URL,
     ProviderClient,
     ProviderError,
     build_provider_client,
@@ -27,7 +28,7 @@ from top_view_grounded_height_verification.common.providers import (
 from top_view_grounded_height_verification.stage1.task_specs import Stage1TaskSpec, get_task_spec
 
 
-SUPPORTED_PROVIDERS = ("openai", "gemini", "anthropic")
+SUPPORTED_PROVIDERS = ("openai", "gemini", "anthropic", "ollama")
 DEFAULT_MODELS = {
     "openai": "gpt-5.4-2026-03-05",
     "gemini": "gemini-3-flash-preview",
@@ -228,11 +229,30 @@ def execute_provider_attempt(
 
 
 def build_provider_clients(args: argparse.Namespace) -> dict[str, ProviderClient | DryRunClient]:
+    if not hasattr(args, "base_urls"):
+        args.base_urls = {}
     env = load_env_file(args.env_path)
     for provider in SUPPORTED_PROVIDERS:
         model_override = env.get(f"{provider.upper()}_MODEL")
         if model_override:
             args.models[provider] = model_override
+    ollama_base_url = (
+        args.base_urls.get("ollama")
+        or env.get("OLLAMA_BASE_URL")
+        or DEFAULT_OLLAMA_BASE_URL
+    )
+    args.base_urls["ollama"] = ollama_base_url
+
+    for provider in args.providers:
+        if args.models.get(provider):
+            continue
+        if args.dry_run:
+            args.models[provider] = f"{provider}-dry-run"
+            continue
+        raise Stage1RunError(
+            f"Missing model for provider `{provider}`. "
+            f"Set {provider.upper()}_MODEL or pass --{provider}-model."
+        )
 
     if args.dry_run:
         return {
@@ -243,16 +263,17 @@ def build_provider_clients(args: argparse.Namespace) -> dict[str, ProviderClient
     clients: dict[str, ProviderClient] = {}
     for provider in args.providers:
         api_key_name = f"{provider.upper()}_API_KEY"
-        api_key = env.get(api_key_name)
-        if not api_key:
+        api_key = "" if provider == "ollama" else env.get(api_key_name)
+        if provider != "ollama" and not api_key:
             raise Stage1RunError(f"Missing {api_key_name}. Add it to {args.env_path}.")
         try:
             clients[provider] = build_provider_client(
                 provider,
                 model=args.models[provider],
-                api_key=api_key,
+                api_key=api_key or "",
                 timeout_seconds=args.timeout_seconds,
                 temperature=args.temperature,
+                base_url=args.base_urls.get(provider),
             )
         except ProviderError as exc:
             raise Stage1RunError(str(exc)) from exc
@@ -764,6 +785,11 @@ def run_stage1(args: argparse.Namespace) -> Path:
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
         "providers": args.providers,
         "models": {provider: args.models[provider] for provider in args.providers},
+        "base_urls": {
+            provider: args.base_urls[provider]
+            for provider in args.providers
+            if args.base_urls.get(provider)
+        },
         "case_count": len(cases),
         "repeats": args.repeats,
         "max_attempts": args.max_attempts,
@@ -854,6 +880,8 @@ def build_parser(default_task_name: str | None = None) -> argparse.ArgumentParse
     parser.add_argument("--max-cases", type=int, default=None)
     for provider, model in DEFAULT_MODELS.items():
         parser.add_argument(f"--{provider}-model", default=model)
+    parser.add_argument("--ollama-model", default=None)
+    parser.add_argument("--ollama-base-url", default=None)
     return parser
 
 
@@ -866,6 +894,10 @@ def parse_args(default_task_name: str | None = None, argv: list[str] | None = No
         "openai": args.openai_model,
         "gemini": args.gemini_model,
         "anthropic": args.anthropic_model,
+        "ollama": args.ollama_model,
+    }
+    args.base_urls = {
+        "ollama": args.ollama_base_url,
     }
     if args.repeats < 1:
         parser.error("--repeats must be >= 1")

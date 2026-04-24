@@ -12,6 +12,7 @@ from top_view_grounded_height_verification.stage1.runner import (
     DEFAULT_ENV_PATH,
     DEFAULT_MAX_ATTEMPTS,
     DEFAULT_MODELS,
+    Stage1RunError,
     SUPPORTED_PROVIDERS,
     run_stage1,
 )
@@ -61,6 +62,7 @@ def namespace_for_task(args: argparse.Namespace, task_name: str, run_name: str) 
         variant_slug=args.variant_slug,
         max_cases=args.max_cases,
         models=dict(args.models),
+        base_urls=dict(args.base_urls),
     )
 
 
@@ -166,6 +168,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--bundle-output-dir", type=Path, default=ROOT / "outputs" / "evidence_bundles")
     for provider, model in DEFAULT_MODELS.items():
         parser.add_argument(f"--{provider}-model", default=model)
+    parser.add_argument("--ollama-model", default=None)
+    parser.add_argument("--ollama-base-url", default=None)
     return parser
 
 
@@ -176,6 +180,10 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "openai": args.openai_model,
         "gemini": args.gemini_model,
         "anthropic": args.anthropic_model,
+        "ollama": args.ollama_model,
+    }
+    args.base_urls = {
+        "ollama": args.ollama_base_url,
     }
     if args.max_attempts < 1:
         parser.error("--max-attempts must be >= 1")
@@ -186,7 +194,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     try:
         run_all(args)
-    except (Stage1RunAllError, OSError, ValueError) as exc:
+    except (Stage1RunAllError, Stage1RunError, OSError, ValueError) as exc:
         print(f"Stage 1 all-run failed: {exc}", file=sys.stderr)
         return 1
     return 0

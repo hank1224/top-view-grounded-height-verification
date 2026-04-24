@@ -32,9 +32,15 @@ writing.
 
 ## Providers
 
-The Stage 1 runners support `openai`, `gemini`, and `anthropic`. Copy
-`.env.example` to `.env` and fill in the API keys needed for the selected
-providers.
+The Stage 1 runners support `openai`, `gemini`, `anthropic`, and local
+`ollama`. Copy `.env.example` to `.env` and fill in the API keys needed for the
+selected hosted providers.
+
+For Ollama, start the local API with `ollama serve`, pull a vision-capable
+model, then pass `--providers ollama --ollama-model <model>` or set
+`OLLAMA_MODEL` in `.env`. The default Ollama base URL is
+`http://localhost:11434/api` and can be overridden with `OLLAMA_BASE_URL` or
+`--ollama-base-url`.
 
 The project uses `uv` for dependency locking and command execution.
 

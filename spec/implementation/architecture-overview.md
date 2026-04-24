@@ -26,7 +26,7 @@
 ## 執行資料流
 
 1. `data/tasks/*/cases.json` 定義每個 Stage 1 task 要跑的 image case。
-2. `stage1.runner` 讀取 prompt、圖片與 provider config，呼叫 OpenAI/Gemini/Anthropic 或 dry-run client。
+2. `stage1.runner` 讀取 prompt、圖片與 provider config，呼叫 OpenAI/Gemini/Anthropic/Ollama 或 dry-run client。
 3. 每次 provider 回覆先被 parse 成 JSON，再交給該 task 的 schema module normalize 與 compare。
 4. Stage 1 attempt artifacts 寫入 `runs/stage1/<task>/<run>/attempts/<provider>/<case>/`。
 5. `stage1.evidence_bundle` 選定每個 task 的 selected attempt，把三份 normalized outputs 合併成 per-image evidence bundle。

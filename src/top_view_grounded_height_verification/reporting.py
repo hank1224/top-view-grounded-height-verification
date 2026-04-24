@@ -53,7 +53,7 @@ def markdown_table(headers: list[str], rows: list[list[Any]]) -> str:
 
 def provider_from_run_name(run_dir: Path) -> str:
     name = run_dir.name
-    for provider in ("openai", "gemini", "anthropic"):
+    for provider in ("openai", "gemini", "anthropic", "ollama"):
         if name.endswith(f"-{provider}") or provider in name:
             return provider
     return name

@@ -70,7 +70,13 @@ def build_stage1_command(args: argparse.Namespace) -> list[str]:
     if args.max_cases is not None:
         command.extend(["--max-cases", str(args.max_cases)])
     for provider, model in args.models.items():
+        if model is None:
+            continue
         command.extend([f"--{provider}-model", model])
+    for provider, base_url in args.base_urls.items():
+        if base_url is None:
+            continue
+        command.extend([f"--{provider}-base-url", base_url])
     add_repeated_arg(command, "--case-id", args.case_id)
     add_repeated_arg(command, "--image-id", args.image_id)
     add_repeated_arg(command, "--package-slug", args.package_slug)
@@ -163,6 +169,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--report-output-dir", type=Path, default=ROOT / "outputs" / "reports")
     for provider, model in DEFAULT_MODELS.items():
         parser.add_argument(f"--{provider}-model", default=model)
+    parser.add_argument("--ollama-model", default=None)
+    parser.add_argument("--ollama-base-url", default=None)
     return parser
 
 
@@ -179,6 +187,10 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "openai": args.openai_model,
         "gemini": args.gemini_model,
         "anthropic": args.anthropic_model,
+        "ollama": args.ollama_model,
+    }
+    args.base_urls = {
+        "ollama": args.ollama_base_url,
     }
     return args
 

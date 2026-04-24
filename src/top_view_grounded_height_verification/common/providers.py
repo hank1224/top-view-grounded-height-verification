@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Any
 
@@ -11,18 +12,39 @@ from top_view_grounded_height_verification.common.io_utils import (
 )
 
 
+DEFAULT_OLLAMA_BASE_URL = "http://localhost:11434/api"
+
+
+def normalize_ollama_base_url(base_url: str | None) -> str:
+    normalized = (base_url or DEFAULT_OLLAMA_BASE_URL).rstrip("/")
+    if not normalized.endswith("/api"):
+        normalized = f"{normalized}/api"
+    return normalized
+
+
 class ProviderError(Exception):
-    pass
+    def __init__(self, message: str, *, status_code: int | None = None) -> None:
+        super().__init__(message)
+        self.status_code = status_code
 
 
 class ProviderClient:
     provider_name: str
 
-    def __init__(self, model: str, api_key: str, timeout_seconds: int, temperature: float) -> None:
+    def __init__(
+        self,
+        model: str,
+        api_key: str,
+        timeout_seconds: int,
+        temperature: float,
+        *,
+        base_url: str | None = None,
+    ) -> None:
         self.model = model
         self.api_key = api_key
         self.timeout_seconds = timeout_seconds
         self.temperature = temperature
+        self.base_url = base_url
 
     def run(self, *, prompt_text: str, image_path: Path) -> dict[str, Any]:
         raise NotImplementedError
@@ -197,6 +219,103 @@ class AnthropicClient(ProviderClient):
         }
 
 
+class OllamaClient(ProviderClient):
+    provider_name = "ollama"
+
+    def __init__(
+        self,
+        model: str,
+        api_key: str,
+        timeout_seconds: int,
+        temperature: float,
+        *,
+        base_url: str | None = None,
+    ) -> None:
+        super().__init__(
+            model,
+            api_key,
+            timeout_seconds,
+            temperature,
+            base_url=normalize_ollama_base_url(base_url),
+        )
+        try:
+            import requests  # type: ignore
+        except ImportError as exc:
+            raise ProviderError(
+                "requests is not installed in the active Python environment. "
+                "Install requirements and run with `./.venv/bin/python`."
+            ) from exc
+        self._requests = requests
+        self.base_url = normalize_ollama_base_url(self.base_url)
+
+    def run(self, *, prompt_text: str, image_path: Path) -> dict[str, Any]:
+        mime_type, image_b64 = encode_image_to_base64(image_path)
+        endpoint = f"{self.base_url}/chat"
+        payload = {
+            "model": self.model,
+            "messages": [
+                {
+                    "role": "user",
+                    "content": prompt_text,
+                    "images": [image_b64],
+                }
+            ],
+            "stream": False,
+            "think": False,
+            "options": {
+                "temperature": self.temperature,
+            },
+        }
+        try:
+            response = self._requests.post(endpoint, json=payload, timeout=self.timeout_seconds)
+        except self._requests.exceptions.RequestException as exc:
+            raise ProviderError(f"Ollama API request failed: {exc}") from exc
+
+        raw_response_text = response.text
+        try:
+            response_json = response.json()
+        except ValueError:
+            response_json = None
+
+        if not response.ok:
+            error_message = ""
+            if isinstance(response_json, dict):
+                error_message = str(response_json.get("error") or "")
+            if not error_message:
+                error_message = raw_response_text.strip()
+            raise ProviderError(
+                f"Ollama API request failed with HTTP {response.status_code}: {error_message}",
+                status_code=response.status_code,
+            )
+
+        if not isinstance(response_json, dict):
+            raise ProviderError("Ollama API returned a non-JSON response", status_code=response.status_code)
+
+        message = response_json.get("message")
+        output_text = message.get("content") if isinstance(message, dict) else None
+        if output_text is not None and not isinstance(output_text, str):
+            output_text = str(output_text)
+
+        return {
+            "status_code": response.status_code,
+            "raw_response_text": raw_response_text
+            or json.dumps(response_json, ensure_ascii=False, indent=2),
+            "response_json": response_json,
+            "response_text": output_text,
+            "request_summary": {
+                "transport": "ollama REST API",
+                "endpoint": endpoint,
+                "model": self.model,
+                "image_path": image_path.relative_to(ROOT).as_posix(),
+                "mime_type": mime_type,
+                "temperature": self.temperature,
+                "base_url": self.base_url,
+                "think": False,
+                "structured_output": False,
+            },
+        }
+
+
 def build_provider_client(
     provider: str,
     *,
@@ -204,6 +323,7 @@ def build_provider_client(
     api_key: str,
     timeout_seconds: int,
     temperature: float,
+    base_url: str | None = None,
 ) -> ProviderClient:
     if provider == "openai":
         return OpenAIClient(model, api_key, timeout_seconds, temperature)
@@ -211,4 +331,12 @@ def build_provider_client(
         return GeminiClient(model, api_key, timeout_seconds, temperature)
     if provider == "anthropic":
         return AnthropicClient(model, api_key, timeout_seconds, temperature)
+    if provider == "ollama":
+        return OllamaClient(
+            model,
+            api_key,
+            timeout_seconds,
+            temperature,
+            base_url=base_url,
+        )
     raise ProviderError(f"Unsupported provider: {provider}")

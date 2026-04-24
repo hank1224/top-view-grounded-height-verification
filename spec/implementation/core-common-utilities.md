@@ -59,13 +59,14 @@
 
 ## `common.providers`
 
-`common.providers` 包裝三個 provider SDK，對 Stage 1 runner 提供一致的 `ProviderClient.run(prompt_text, image_path)` 介面。
+`common.providers` 包裝 hosted provider SDK 與本機 Ollama REST API，對 Stage 1 runner 提供一致的 `ProviderClient.run(prompt_text, image_path)` 介面。
 
 支援 provider：
 
 - `openai`
 - `gemini`
 - `anthropic`
+- `ollama`
 
 每個 provider client 回傳 dict：
 
@@ -75,9 +76,11 @@
 - `response_text`
 - `request_summary`
 
-`request_summary` 至少包含 transport、endpoint、model、image path、MIME type、temperature。Stage 1 runner 會再補上 task name、case id、image id 等欄位。
+`request_summary` 至少包含 transport、endpoint、model、image path、MIME type、temperature。Ollama request summary 也會記錄 normalized base URL。Stage 1 runner 會再補上 task name、case id、image id 等欄位。
 
 Provider wrapper 不要求 structured output；目前 prompt 要求模型回 JSON，Stage 1 再以 `parse_json_text` 與 schema module 做容錯解析與驗證。
+
+Ollama 使用 `POST <base_url>/chat`，預設 base URL 是 `http://localhost:11434/api`。Real run 需要 `OLLAMA_MODEL` 或 `--ollama-model`，但不需要 API key；使用者需先啟動 `ollama serve` 並 pull vision-capable model。
 
 ## 測試與風險
 
@@ -86,4 +89,3 @@ Provider wrapper 不要求 structured output；目前 prompt 要求模型回 JSO
 - `parse_dimension_value` 僅支援直接 numeric string，因此 prompt/schema 應避免輸出單位。
 - `write_csv` 使用第一列欄位，後續 row 若有額外 key 不會自動納入。
 - Provider SDK 呼叫是 network side effect，單元測試主要透過 dry-run 或 helper payload 驗證下游行為。
-
