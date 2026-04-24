@@ -1,112 +1,67 @@
 # Top-View Grounded Height Verification
 
-本專案是一個針對電子元件正投影圖的高度語意驗證框架。核心目標不是讓模型重新猜高度，而是先抽取較可靠的低階圖面訊號，再用 top-view-grounded rules 建構 height evidence，最後篩檢模型原本的 direct height answer。
+Top-View Grounded Height Verification studies how vision-language models answer
+overall package height from electronic package drawings. It separates low-level
+evidence extraction, top-view-grounded height evidence construction, and direct
+answer screening so the pipeline can support both engineering work and thesis
+writing.
 
-```text
-Extract low-level visual evidence, construct explainable height evidence,
-then screen direct height answers as Supported, Contradicted, or Insufficient Evidence.
-```
+## At a Glance
 
-## Reading Entry Points
+- 15 package types
+- 2 numeric value variants per package
+- 30 package drawing images
+- 3 Stage 1 evidence acquisition tasks
+- 1 Stage 2/3 height verification pipeline
+- 3 screening outcomes: `supported`, `contradicted`, and `insufficient_evidence`
 
-建議依照目的閱讀：
+## Start Here
 
-- 論文問題定位與方法敘事：[`spec/paper-intent/paper-statement.md`](./spec/paper-intent/paper-statement.md)
-- 現行實作規格與模組文件：[`spec/README.md`](./spec/README.md)
-- 手動統整的論文實驗數據：[`experiment_results/README.md`](./experiment_results/README.md)
-- 程式入口與模組實作：[`src/top_view_grounded_height_verification`](./src/top_view_grounded_height_verification)
-- CLI scripts：[`scripts`](./scripts)
-- 測試：[`tests`](./tests)
+- If you want the documentation structure, start at [spec/README.md](spec/README.md).
+- If you want the thesis-facing problem statement, start at [spec/paper-intent/paper-statement.md](spec/paper-intent/paper-statement.md).
+- If you want current implementation behavior, start with [src/top_view_grounded_height_verification](src/top_view_grounded_height_verification) and [tests](tests).
+- If you want generated experiment summaries, start at [experiment_results/README.md](experiment_results/README.md).
 
-## Project Shape
+## Pipeline Stages
 
-```text
-src/top_view_grounded_height_verification/
-  core/        # slot geometry and numeric helpers
-  common/      # I/O helpers and provider SDK wrappers
-  stage1/      # low-level evidence acquisition and evidence bundles
-  stage2/      # evidence fusion, audit, height evidence construction
-  stage3/      # height answer screening
-  pipeline.py  # Stage 2/3 batch runner
-  reporting.py # report artifact builder
+- `direct_extraction`: model-provided package-level dimension answers, including `overall_package_height`
+- `dimension_extraction`: OCR dimension values, slot layout, slot assignment, and dimension-line orientation
+- `top_view_detection`: top-view slot localization
+- `height_evidence`: top-view-grounded construction of supporting, ruled-out, and unresolved dimensions
+- `height_screening`: screening of the direct `overall_package_height` answer
 
-data/
-  package_drawings/ # image manifest and package drawing images
-  tasks/            # Stage 1 cases, ground truth, prompts
+## Providers
 
-spec/               # current implementation and paper-intent specs
-experiment_results/ # manually curated paper-facing experiment summaries
-outputs/            # generated artifacts, ignored by git
-runs/               # generated Stage 1 runs, ignored by git
-```
+The Stage 1 runners support `openai`, `gemini`, and `anthropic`. Copy
+`.env.example` to `.env` and fill in the API keys needed for the selected
+providers.
 
-## Pipeline Overview
+The project uses `uv` for dependency locking and command execution.
 
-The framework has three stages:
+## Repository Map
 
-1. Stage 1: Low-Level Evidence Extraction
-   - Runs `direct_extraction`, `dimension_extraction`, and `top_view_detection`.
-   - Produces normalized evidence bundles per image.
-   - Does not judge whether the height answer is correct.
+- `data/`: package drawing images, task cases, prompts, and ground truth
+- `src/`: pipeline implementation
+- `tests/`: implementation behavior checks
+- `spec/`: implementation specs and thesis-facing method notes
+- `runs/`: raw Stage 1 runs
+- `outputs/`: evidence bundles, verification results, and report artifacts
+- `experiment_results/`: manually curated paper-facing summaries
 
-2. Stage 2: Height Evidence Construction
-   - Fuses low-level evidence.
-   - Builds `supporting_dimensions`, `ruled_out_dimensions`, and `unresolved_dimensions`.
-   - Produces `verification_readiness`.
-   - Audit reports are evaluation side channels and do not modify the main flow.
+## Dataset Source
 
-3. Stage 3: Height Answer Screening
-   - Screens `overall_package_height`.
-   - Uses `max(supporting_dimensions.numeric_value)` only when evidence is ready.
-   - Outputs `supported`, `contradicted`, or `insufficient_evidence`.
-
-## Common Commands
-
-Run tests:
-
-```bash
-PYTHONPATH=src:tests ./.venv/bin/python -m unittest discover -s tests
-```
-
-Run all Stage 1 tasks and build evidence bundles:
-
-```bash
-./.venv/bin/python scripts/stage1_run_all.py --run-name <run-name>
-```
-
-Run Stage 2/3 verification over an evidence bundle:
-
-```bash
-./.venv/bin/python scripts/run_pipeline.py \
-  --input outputs/evidence_bundles/<bundle-name> \
-  --run-name <verification-run-name>
-```
-
-Build report artifacts from verification runs:
-
-```bash
-./.venv/bin/python scripts/build_report.py \
-  --run-dir outputs/verification_results/<verification-run-name> \
-  --report-name <report-name>
-```
-
-Run the full analysis flow:
-
-```bash
-./.venv/bin/python scripts/run_full_analysis.py --run-name <run-name>
-```
-
-## Source Of Truth
-
-- Current implementation truth: code under `src/` and tests under `tests/`.
-- Paper intent truth: `spec/paper-intent/paper-statement.md`.
-- Structured specs: `spec/`.
-- Paper-facing experiment summaries: `experiment_results/`.
-- Generated artifacts under `outputs/` and `runs/` are reproducible outputs, not hand-maintained docs.
-
-舊的 root-level planning documents and draft docs have been removed from the active documentation surface. When in doubt, prefer `spec/paper-intent/paper-statement.md`, `spec/`, code, and tests.
+The dataset is derived from STEP files obtained from the KiCad 9.x Library
+Repositories, specifically the `kicad-packages3D` repository at
+https://gitlab.com/kicad/libraries/kicad-packages3D. The selected package models
+were imported into Autodesk Fusion to produce the three-view drawings and
+dimension annotations used by this benchmark, so the dataset follows the
+Creative Commons licensing terms applied to the KiCad library source material.
 
 ## License
 
-This repository is licensed under
-[`CC-BY-SA-4.0 WITH KiCad-libraries-exception`](./LICENSE).
+Except where otherwise noted, this repository is licensed under Creative Commons
+Attribution-ShareAlike 4.0 International with the KiCad libraries exception:
+`CC-BY-SA-4.0 WITH KiCad-libraries-exception`.
+
+See [LICENSE](LICENSE). Third-party material remains subject to its original
+license unless explicitly covered by this repository's license notice.

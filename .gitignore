@@ -3,8 +3,15 @@ __pycache__/
 *.pyc
 .venv/
 .DS_Store
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+build/
+dist/
+.coverage
+htmlcov/
 runs/
 outputs/
 experiment_results/
-
-.DS_Store
+other_repo/
